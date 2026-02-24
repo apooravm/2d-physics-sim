@@ -1,3 +1,6 @@
+/// <reference types="p5/global" />
+// // @ts-check
+
 let x = 50;
 let speed = 2;
 

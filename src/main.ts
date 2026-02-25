@@ -85,7 +85,7 @@ const sketch = (p: p5) => {
     let HEIGHT = 600;
 
     let k = 0.01;
-    let restLength = 200;
+    let restLength = 400;
 
     // nw -> sw -> se -> ne
     let sq_width = 20;
@@ -102,7 +102,10 @@ const sketch = (p: p5) => {
     let s_cd = new Spring(k, restLength, c, d);
     let s_da = new Spring(k, restLength, d, a);
 
-    let p1 = new Particle(100, 100, 20, WIDTH, HEIGHT);
+    let p1 = new Particle(100, 100, 10, WIDTH, HEIGHT);
+    let p2 = new Particle(100, 300, 10, WIDTH, HEIGHT);
+    let s1 = new Spring(k, restLength, p1, p2);
+    // @ts-ignore
     let l1 = new Line(150, 400, 400, 100);
 
     let mesh: Mesh = {
@@ -122,15 +125,31 @@ const sketch = (p: p5) => {
         p.background(51);
         dt = speed * p.deltaTime;
 
-        // l1.B.x = p.mouseX;
-        // l1.B.y = p.mouseY;
+        // p2.pos.x = p.mouseX;
+        // p2.pos.y = p.mouseY;
+
+        p.mousePressed = () => {
+            p2.pos.x = p.mouseX;
+            p2.pos.y = p.mouseY;
+        };
 
         p1.update(dt);
-        p1.show(p);
-        l1.show(p);
-        l1.particle_collide(p1, p);
+        p2.update(dt);
+        // p1.particleCollision(p2, p);
+        // p2.particleCollision(p1, p);
 
-        p.mouseReleased = () => {};
+        s1.update();
+        p1.show(p);
+        p2.show(p);
+        s1.show(p);
+
+        p.stroke("black");
+        p.strokeWeight(1);
+        p.line(p1.pos.x, p1.pos.y, p2.pos.x, p2.pos.y);
+        // l1.show(p);
+        // l1.particle_collide(p1, p);
+        // l1.particle_collide(p2, p);
+
         return;
 
         p.mouseReleased = () => {
@@ -144,17 +163,17 @@ const sketch = (p: p5) => {
         p.circle(p.mouseX, p.mouseY, 80);
 
         const fDist = 40;
-        // const scaler = 0.05;
+        const scaler = 0.05;
         for (const pr of mesh.points) {
             const mouse = new Vec2(p.mouseX, p.mouseY);
             const dir = mouse.sub(pr.pos);
             if (dir.mag() <= fDist) {
                 pr.vel.mult_scaler(-1);
             }
-            // if (dir.mag() <= fDist) {
-            //     dir.mult_scaler(scaler);
-            //     pr.addForce(-dir.x, -dir.y);
-            // }
+            if (dir.mag() <= fDist) {
+                dir.mult_scaler(scaler);
+                pr.addForce(-dir.x, -dir.y);
+            }
         }
 
         for (const pr of mesh.points) {

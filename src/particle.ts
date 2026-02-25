@@ -18,8 +18,8 @@ export class Particle {
 
     constructor(x: number, y: number, radius: number, screenW: number, screenH: number) {
         this.pos = new Vec2(x, y);
-        this.vel = new Vec2(Math.random() - 0.5, Math.random() - 0.5);
-        // this.vel = new Vec2(0, 0);
+        // this.vel = new Vec2(Math.random() - 0.5, Math.random() - 0.5);
+        this.vel = new Vec2(0, 0);
         this.acc = new Vec2(0, 0);
         this.force = new Vec2(0, 0);
         this.mass = 1;
@@ -116,6 +116,30 @@ export class Particle {
         this.acc.y = 0;
     }
 
+    particleCollision(p: Particle, p5: p5) {
+        // check if particles overlap
+        const dx = p.pos.x - this.pos.x;
+        const dy = p.pos.y - this.pos.y;
+        const dist = dx * dx + dy * dy;
+        if (dist <= (p.radius + this.radius) ** 2) {
+            p5.fill("orange");
+            console.log(dist, (p.radius + this.radius) ** 2);
+
+            // static response
+            const dist_sq = this.pos.distance(p.pos);
+            // value each particle to be moved by. 0.5 * since each particle gets half
+            const disp_len = 0.5 * (dist_sq - this.radius - p.radius);
+
+            this.pos.x -= (disp_len * (this.pos.x - p.pos.x)) / dist_sq;
+            this.pos.y -= (disp_len * (this.pos.y - p.pos.y)) / dist_sq;
+
+            p.pos.x += (disp_len * (this.pos.x - p.pos.x)) / dist_sq;
+            p.pos.y += (disp_len * (this.pos.y - p.pos.y)) / dist_sq;
+        } else {
+            p5.fill("white");
+        }
+    }
+
     addForce(x: number, y: number) {
         this.acc.x += x;
         this.acc.y += y;
@@ -123,7 +147,7 @@ export class Particle {
 
     show(p: p5) {
         // p.stroke(255);
-        p.strokeWeight(2);
-        p.circle(this.pos.x, this.pos.y, this.radius);
+        p.strokeWeight(0);
+        p.circle(this.pos.x, this.pos.y, this.radius * 2);
     }
 }

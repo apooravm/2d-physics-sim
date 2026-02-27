@@ -40,8 +40,9 @@ const sketch = (p: p5) => {
             p3.vel = new Vec2(0, 0);
         }
 
-        // p1.addForce(0, 0.1);
-        // p2.addForce(0, 0.1);
+        // gravity
+        p1.addForce(0, 0.1);
+        p2.addForce(0, 0.1);
         p1.update(dt);
         p2.update(dt);
         p3.update(dt);

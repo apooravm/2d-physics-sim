@@ -6,18 +6,54 @@ export class Spring {
     restLength: number;
     a: Particle;
     b: Particle;
+    damping: number;
+    compliance: number;
+    lambda: number;
 
     constructor(k: number, restLength: number, a: Particle, b: Particle) {
         this.k = k;
         this.restLength = restLength;
         this.a = a;
         this.b = b;
+        this.damping = 1;
+        this.compliance = 0;
+        this.lambda = 0;
     }
 
     // F = -K * x
     // x -> extension/displacement
     // K = spring constant -> stiffness/...
-    update() {
+    update(dt: number) {
+        // a- b dir
+        let delta = this.b.pos.clone().sub(this.a.pos);
+        let dist = delta.mag();
+
+        if (dist <= 0.01) return;
+
+        let dir = delta.clone();
+        dir.normalize();
+
+        // spring force
+        let x = dist - this.restLength;
+        let springForce = dir.clone().mult_scaler(this.k * x);
+
+        // damping force
+        let relVel = this.b.vel.clone().sub(this.a.vel);
+
+        // project relvel onto dir
+        let velAlongSpring = relVel.dot(dir);
+
+        let dampingForce = dir.clone().mult_scaler(this.damping * velAlongSpring);
+
+        // final force
+        let force = springForce.clone().add(dampingForce);
+        force.mult_scaler(dt);
+
+        this.a.addForce(force.x, force.y);
+        this.b.addForce(-force.x, -force.y);
+    }
+
+    update_old() {
         let force = this.b.pos.clone().sub(this.a.pos);
         let x = force.mag() - this.restLength;
 
@@ -27,6 +63,30 @@ export class Spring {
         this.a.addForce(force.x, force.y);
         force.mult_scaler(-1);
         this.b.addForce(force.x, force.y);
+    }
+
+    xpbd_constraint(dt: number) {
+        let delta = this.b.pos.clone().sub(this.a.pos);
+        let dist = delta.mag();
+        if (dist < 1e-6) return;
+
+        let dir = delta.div_scaler(dist);
+        let C = dist - this.restLength;
+
+        let alpha_tilde = this.compliance / (dt * dt);
+
+        // equal mass assumed (invMass = 1)
+        let w = 1 + 1;
+
+        // XPBD lambda update
+        let delta_lambda = (-C - alpha_tilde * this.lambda) / (w + alpha_tilde);
+
+        this.lambda += delta_lambda;
+
+        let correction = dir.mult_scaler(delta_lambda);
+
+        this.a.pos.sub(correction);
+        this.b.pos.add(correction);
     }
 
     show(p: p5) {

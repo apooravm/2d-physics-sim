@@ -18,7 +18,7 @@ export class Particle {
 
     constructor(x: number, y: number, radius: number, screenW: number, screenH: number) {
         this.pos = new Vec2(x, y);
-        const multiplier = 20;
+        const multiplier = 1;
         this.vel = new Vec2((Math.random() - 0.5) * multiplier, (Math.random() - 0.5) * multiplier);
         // this.vel = new Vec2(0, 0);
         this.acc = new Vec2(0, 0);
@@ -26,7 +26,7 @@ export class Particle {
         this.maxVel = 40;
         this.radius = radius;
         this.mass = 10 * this.radius;
-        this.damping = 1;
+        this.damping = 0.95;
         this.screenW = screenW;
         this.screenH = screenH;
         this.density = 1;

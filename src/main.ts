@@ -1,7 +1,7 @@
 import p5 from "p5";
 import { Line } from "./line";
 import { Particle } from "./particle";
-import { Vec2 } from "./utils";
+import { Spring } from "./spring";
 
 const sketch = (p: p5) => {
     let WIDTH = 800;
@@ -9,12 +9,11 @@ const sketch = (p: p5) => {
 
     let p1 = new Particle(400, 100, 10, WIDTH, HEIGHT);
     p1.locked = false;
-    let p2 = new Particle(100, 200, 40, WIDTH, HEIGHT);
-    let p3 = new Particle(100, 500, 80, WIDTH, HEIGHT);
+    let p2 = new Particle(100, 200, 10, WIDTH, HEIGHT);
 
-    // let k = 0.01;
-    // let restLength = 200;
-    // let s1 = new Spring(k, restLength, p1, p2);
+    let k = 0.01;
+    let restLength = 50;
+    let s1 = new Spring(k, restLength, p1, p2);
     // let s2 = new Spring(k, restLength, p2, p3);
 
     // @ts-ignore
@@ -35,25 +34,27 @@ const sketch = (p: p5) => {
         p.noFill();
         p.strokeWeight(1);
 
+        // gravity
+        p1.addForce(0, 0.2);
+        p2.addForce(0, 0.2);
+
         if (p.mouseIsPressed) {
-            p3.pos = new Vec2(p.mouseX, p.mouseY);
-            p3.vel = new Vec2(0, 0);
+            p2.pos.x = p.mouseX;
+            p2.pos.y = p.mouseY;
+            p2.vel.mult_scaler(0);
         }
 
-        // gravity
-        p1.addForce(0, 0.1);
-        p2.addForce(0, 0.1);
         p1.update(dt);
         p2.update(dt);
-        p3.update(dt);
         p1.particleCollision_Impulse(p2);
-        p1.particleCollision_Impulse(p3);
-        p2.particleCollision_Impulse(p3);
+        p2.particleCollision_Impulse(p1);
         // p2.particleCollision(p1, p);
+
+        s1.xkbd_constraint(dt);
 
         p1.show(p);
         p2.show(p);
-        p3.show(p);
+        s1.show(p);
     };
 };
 

@@ -45,12 +45,39 @@ export class Spring {
 
         let dampingForce = dir.clone().mult_scaler(this.damping * velAlongSpring);
 
-        // final force
+        // final force = spring force + damping force
         let force = springForce.clone().add(dampingForce);
+
         force.mult_scaler(dt);
 
         this.a.addForce(force.x, force.y);
         this.b.addForce(-force.x, -force.y);
+    }
+
+    update2() {
+        // spring force
+        let delta = this.b.pos.clone().sub(this.a.pos);
+        let dist = delta.mag();
+
+        let spring_force = this.k * (dist - this.restLength);
+
+        // damping force
+        let dist_norm = delta.div_scaler(dist);
+        let v_rel = this.b.vel.clone().sub(this.a.vel);
+        let damping_force = dist_norm.dot(v_rel) * this.damping;
+
+        let final_force = spring_force + damping_force;
+
+        let force_a = dist_norm.mult_scaler(final_force);
+
+        let delta_a_b = this.a.pos.clone().sub(this.b.pos);
+        let dist_a_b = delta_a_b.mag();
+        let dist_norm_a_b = delta_a_b.div_scaler(dist_a_b);
+
+        let force_b = dist_norm_a_b.mult_scaler(final_force);
+
+        this.a.addForce(force_a.x, force_a.y);
+        this.b.addForce(force_b.x, force_b.y);
     }
 
     update_old() {
